@@ -81,11 +81,12 @@ def _sniff_element_and_name_from_path(path: Path) -> Tuple[Optional[int], Option
     We look for patterns like '123_Salah', '456-Haaland', etc.
     """
     # Combine parts of the parent folder and file stem to search for an integer id and a plausible name chunk
-    candidates = [path.stem]
+    candidates = []
     if path.parent and path.parent != path:
         candidates.append(path.parent.name)
+    candidates.append(path.stem)
 
-    # Prefer an integer ID if present
+    # Try to find a numeric id in any candidate
     element = None
     for s in candidates:
         m = re.search(r"(?<!\d)(\d{1,9})(?!\d)", s)
@@ -96,12 +97,12 @@ def _sniff_element_and_name_from_path(path: Path) -> Tuple[Optional[int], Option
             except ValueError:
                 pass
 
-    # Try to form a name-like string from alpha parts (fallback)
+    # Build a name from alpha parts, skipping generic tokens
+    stop = {"gw", "gameweek", "round", "event", "csv"}
     name = None
     for s in candidates:
-        # split on underscores/dashes/spaces and keep alpha chunks
         parts = re.split(r"[_\-\s]+", s)
-        parts = [p for p in parts if p.isalpha() and len(p) > 1]
+        parts = [p for p in parts if p.isalpha() and len(p) > 1 and p.lower() not in stop]
         if parts:
             name = " ".join(parts)
             break
@@ -143,13 +144,17 @@ def _ensure_element_and_gw(df: pd.DataFrame, path: Path) -> pd.DataFrame:
 def _ensure_full_name(df: pd.DataFrame, fallback_name: Optional[str]) -> pd.DataFrame:
     """Create 'full_name' if missing, using first/second name or fallback from path."""
     df = df.copy()
-    if "full_name" not in df.columns:
-        if "first_name" in df.columns or "second_name" in df.columns:
-            first = df.get("first_name", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.strip()
-            second = df.get("second_name", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.strip()
-            df["full_name"] = (first + " " + second).str.replace(r"\s+", " ", regex=True).str.strip()
-        elif fallback_name:
-            df["full_name"] = fallback_name
+    if "full_name" in df.columns:
+        return df
+
+    if "first_name" in df.columns or "second_name" in df.columns:
+        first = df.get("first_name", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.strip()
+        second = df.get("second_name", pd.Series(index=df.index, dtype=object)).fillna("").astype(str).str.strip()
+        df["full_name"] = (first + " " + second).str.replace(r"\s+", " ", regex=True).str.strip()
+    elif fallback_name:
+        bad = {"gw", "gameweek", "round", "event"}
+        if fallback_name.strip().lower() not in bad:
+            df["full_name"] = fallback_name.strip()
     return df
 
 

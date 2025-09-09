@@ -90,6 +90,41 @@ df_players2526_cleaned["full_name"] = df_players2526_cleaned["full_name"].apply(
     }))
 )
 
+df_players2425_panel = pd.read_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\players_2425_panel.csv")
+df_players2324_panel = pd.read_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\players_2324_panel.csv")
+
+df_players2425_panel["full_name"] = df_players2425_panel["full_name"].apply(lambda x: x if pd.isna(x) else
+    "".join(ch for ch in ud.normalize("NFKD", str(x)) if not ud.combining(ch)
+    ).translate(str.maketrans({
+        "Ø":"O","ø":"o",
+        "Ł":"L","ł":"l",
+        "Đ":"D","đ":"d",
+        "Æ":"AE","æ":"ae",
+        "Œ":"OE","œ":"oe",
+        "ß":"ss",
+        "Þ":"Th","þ":"th",
+        "Ŋ":"N","ŋ":"n",
+        "ƒ":"f",
+    }))
+)
+
+df_players2324_panel["full_name"] = df_players2324_panel["full_name"].apply(lambda x: x if pd.isna(x) else
+    "".join(ch for ch in ud.normalize("NFKD", str(x)) if not ud.combining(ch)
+    ).translate(str.maketrans({
+        "Ø":"O","ø":"o",
+        "Ł":"L","ł":"l",
+        "Đ":"D","đ":"d",
+        "Æ":"AE","æ":"ae",
+        "Œ":"OE","œ":"oe",
+        "ß":"ss",
+        "Þ":"Th","þ":"th",
+        "Ŋ":"N","ŋ":"n",
+        "ƒ":"f",
+    }))
+)
+
 #final conversion of modified data
 df_players2526_cleaned.to_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\players_2526_cleaned.csv", index=False)
 df_players2425_cleaned.to_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\players_2425_cleaned.csv", index=False)
+df_players2425_panel.to_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\players_2425_panel", index=False)
+df_players2324_panel.to_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\players_2324_panel.csv", index=False)
