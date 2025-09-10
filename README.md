@@ -8,3 +8,12 @@ data_loader.py
 run_merge.py, merge_fpl_gw_to_panel
 - run_merge.py runs merge_fpl_gw_to_panel in order to merge weekly data of each player of each season into one csv file based on given format
 
+
+
+
+
+
+
+Timeline:
+
+10/9/2025- finally managed to have a decent dataset for the model
