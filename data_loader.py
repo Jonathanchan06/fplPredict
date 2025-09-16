@@ -1,10 +1,12 @@
+"""
+Used for processing data currently from the official FPL API (25/26 season
+"""
+
 import requests
 import pandas as pd
 import unicodedata as ud
 
-
 SESSION = requests.Session()
-
 
 OUT_COLS = [
     "element", "gw", "minutes", "expected_goal_involvements", "ict_index",
@@ -16,30 +18,36 @@ OUT_COLS = [
     "full_name"
 ]
 
+
 def strip_accents(s: str) -> str:
+    """
+
+    :param s: accentuated text
+    :return: text with no accent
+    """
     if s is None:
         return ""
     return ud.normalize("NFKD", s).encode("ASCII", "ignore").decode("ASCII")
 
-#retrieve 'element'/player id, names, ppg
+
+# retrieve 'element'/player id, names, ppg
 boot = SESSION.get(f"{"https://fantasy.premierleague.com/api"}/bootstrap-static/").json()
 elems = pd.json_normalize(boot["elements"])
 
-
 players_meta = (
     elems[["id", "first_name", "second_name", "points_per_game"]]
-      .rename(columns={"id": "element"})
-      .copy()
+    .rename(columns={"id": "element"})
+    .copy()
 )
-#combine first name and second name
+# combine first name and second name
 players_meta["full_name"] = (
-    players_meta["first_name"].astype(str).str.strip().fillna("") + " " +
-    players_meta["second_name"].astype(str).str.strip().fillna("")
+        players_meta["first_name"].astype(str).str.strip().fillna("") + " " +
+        players_meta["second_name"].astype(str).str.strip().fillna("")
 ).str.replace(r"\s+", " ", regex=True).str.strip()
 players_meta["full_name"] = players_meta["full_name"].map(strip_accents)
 players_meta = players_meta[["element", "points_per_game", "full_name"]]
 
-#retrieve live platyer history
+# retrieve live platyer history
 rows = []
 for i, pid in enumerate(players_meta["element"].tolist(), 1):
     try:
@@ -81,15 +89,14 @@ for i, pid in enumerate(players_meta["element"].tolist(), 1):
     except ValueError:
         continue
 
-
-#merge columns
+# merge columns
 panel = pd.DataFrame(rows).merge(players_meta, on="element", how="left")
 for col in OUT_COLS:  # guarantee schema even if some cols are missing
     if col not in panel.columns:
         panel[col] = pd.NA
 panel = panel.sort_values(["element", "gw"], kind="mergesort")[OUT_COLS].reset_index(drop=True)
-
+panel['season'] = '2526'
 panel.to_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\players2526_panel.csv"
-, index=False)
+             , index=False)
 print("Wrote:", panel.shape, "->", r"C:\Users\Asus\Desktop\fpl_data\archive\players2526_panel.csv"
-)
+      )

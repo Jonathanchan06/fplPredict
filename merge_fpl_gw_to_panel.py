@@ -27,6 +27,12 @@ Assumptions (robust to variations):
   so the final CSV matches your target schema. Missing columns are filled with NaN.
 """
 
+
+"""
+Used for processing seasonal data from previous seasons. (before 25/26)
+"""
+
+
 import argparse
 import re
 from pathlib import Path
