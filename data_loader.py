@@ -1,5 +1,5 @@
 """
-Used for processing data currently from the official FPL API (25/26 season
+Used for processing data currently from the official FPL API (25/26 season)
 """
 
 import requests
