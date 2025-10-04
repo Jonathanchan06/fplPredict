@@ -27,7 +27,6 @@ df = df.drop(columns=['transfers_in', 'team_h_score', 'points_per_game'])
 df["season"] = df["season"].astype(str).str.strip()
 valid = df.loc[df["season"] == "2526", "full_name"].unique()
 df = df[df["full_name"].isin(valid)]
-df.to_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\all_panels.csv", index=False)
 
 
 #reassgining IDs to players as IDs are mixed up due to data over multiple seasons
@@ -39,5 +38,3 @@ df.to_csv(r"C:\Users\Asus\Desktop\fpl_data\archive\all_panels.csv", index=False)
 
 #finding missing values(if any)
 print(df.isnull().sum())
-
-#add player position (missing from original data)
